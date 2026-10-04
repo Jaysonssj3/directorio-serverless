@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:usuarios;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  flyway:
+    enabled: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+app:
+  jwt:
+    secret: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+    issuer: usuarios-api
+    ttl: 15m
+  bootstrap:
+    enabled: false

@@ -1,0 +1,9 @@
+node_modules/
+.expo/
+dist/
+dist-ios/
+.test-build/
+.env
+*.jks
+*.keystore
+credentials.json

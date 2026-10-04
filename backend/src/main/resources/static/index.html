@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#122e31"><title>Directorio · Gestión de usuarios</title>
+  <link rel="icon" href="data:,"><link rel="stylesheet" href="/app.css"><script src="/app.js" defer></script>
+</head>
+<body>
+  <div id="auth-view" class="auth-layout">
+    <section class="intro">
+      <a class="brand" href="/" aria-label="Directorio, inicio"><span class="brand-icon">d.</span> directorio</a>
+      <div class="intro-copy"><span class="eyebrow light">UN ESPACIO PARA TU EQUIPO</span><h1>Las personas,<br>en un solo lugar.</h1><p>Organiza las cuentas de tu equipo y administra sus accesos desde una interfaz sencilla.</p></div>
+      <div class="people-art" aria-hidden="true"><div class="orbit"></div><div class="person p1">AM</div><div class="person p2">JL</div><div class="person p3">CR</div><div class="art-card"><span class="dot"></span> Cada persona, su espacio.</div><div class="spark">✳</div></div>
+      <p class="intro-foot">Un directorio claro. Un equipo conectado.</p>
+    </section>
+    <main class="auth-main">
+      <span class="eyebrow">BIENVENIDO A DIRECTORIO</span><h2 id="auth-title">Inicia sesión</h2><p id="auth-description" class="muted">Accede con el correo y la contraseña de tu cuenta.</p>
+      <form id="auth-form">
+        <div id="register-name-wrap" hidden><label for="register-name">Nombre completo</label><input id="register-name" maxlength="100" autocomplete="name"></div>
+        <label for="auth-email">Correo electrónico</label><input id="auth-email" type="email" required maxlength="254" autocomplete="username" placeholder="nombre@ejemplo.com">
+        <label for="auth-password">Contraseña</label><div class="password-field"><input id="auth-password" type="password" required maxlength="72" autocomplete="current-password"><button type="button" id="show-password" class="reveal" aria-pressed="false">Mostrar</button></div>
+        <p id="password-help" class="field-help" hidden>Al menos 12 caracteres y como máximo 72 bytes. Algunos símbolos ocupan más de un byte.</p>
+        <p id="auth-error" class="error" role="alert" hidden></p>
+        <button id="auth-submit" type="submit" class="button primary full">Entrar a mi cuenta <span aria-hidden="true">→</span></button>
+      </form>
+      <p class="auth-switch"><span id="switch-description">¿Aún no tienes cuenta?</span> <button id="switch-auth" class="text-button">Crear una cuenta</button></p>
+      <div class="privacy-note"><span aria-hidden="true">◈</span><p>Tu acceso es personal.<br><span class="muted">Al cerrar sesión, saldrás de este navegador.</span></p></div>
+    </main>
+  </div>
+
+  <div id="workspace" class="workspace" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Directorio, inicio"><span class="brand-icon">d.</span> directorio</a>
+      <span class="nav-label">MI ESPACIO</span>
+      <nav aria-label="Navegación principal"><button id="nav-users" class="nav-item active"><span aria-hidden="true">▦</span> Usuarios</button><button id="nav-profile" class="nav-item"><span aria-hidden="true">◉</span> Mi perfil</button></nav>
+      <div class="sidebar-note"><span class="eyebrow light">TODO EN ORDEN</span><p>Las personas y sus accesos,<br>siempre a mano.</p></div>
+      <div class="account"><span id="account-avatar" class="avatar"></span><div><strong id="account-name"></strong><small id="account-role"></small></div></div>
+      <button id="logout" class="logout">Cerrar sesión <span aria-hidden="true">↗</span></button>
+    </aside>
+    <main class="main-content">
+      <header class="topbar"><span>Tu espacio de trabajo</span><span class="session-indicator"><span class="dot"></span> Sesión iniciada</span></header>
+      <div id="notice" class="notice" role="status" hidden></div>
+      <section id="users-view" aria-labelledby="users-title">
+        <div class="page-heading"><div><span class="eyebrow">DIRECTORIO DEL EQUIPO</span><h1 id="users-title">Usuarios</h1><p class="muted">Un lugar para gestionar las personas y sus accesos.</p></div><button id="new-user" class="button primary">+ Nuevo usuario</button></div>
+        <div class="summary-grid"><div class="summary"><span>En esta página</span><strong id="count-all">—</strong><small>Cuentas del directorio</small></div><div class="summary"><span>Administradores</span><strong id="count-admin">—</strong><small>Con acceso de gestión</small></div><div class="summary"><span>Usuarios</span><strong id="count-user">—</strong><small>Con acceso personal</small></div></div>
+        <section class="table-card" aria-label="Listado de usuarios">
+          <div class="table-toolbar"><div><h2>Personas del equipo</h2><p class="muted small">Consulta un perfil o administra su información.</p></div><div class="table-tools"><label class="sr-only" for="search">Filtrar esta página por nombre o correo</label><input type="search" id="search" placeholder="Filtrar esta página…"><button id="refresh" class="button secondary">Actualizar</button></div></div>
+          <p id="list-error" class="error list-message" role="alert" hidden></p><p id="list-loading" class="list-message" role="status" hidden>Cargando usuarios…</p>
+          <div class="table-scroll"><table><thead><tr><th>Nombre</th><th>Correo electrónico</th><th>Rol</th><th>Fecha de alta</th><th class="align-right">Acciones</th></tr></thead><tbody id="users-body"></tbody></table></div>
+          <p id="empty" class="empty" hidden>No hay usuarios en esta página.</p>
+          <footer class="table-footer"><span id="page-label">Página 1</span><div><button id="previous" class="button secondary">← Anterior</button><button id="next" class="button secondary">Siguiente →</button></div></footer>
+        </section>
+        <p class="bottom-note">Los administradores gestionan las cuentas. Cada usuario puede consultar su propio perfil.</p>
+      </section>
+      <section id="profile-view" hidden aria-labelledby="profile-title"><div class="page-heading"><div><span class="eyebrow">TU CUENTA</span><h1 id="profile-title">Mi perfil</h1><p class="muted">Tu información y nivel de acceso.</p></div></div><div id="profile-card" class="profile-card"></div></section>
+    </main>
+  </div>
+
+  <dialog id="editor"><form id="editor-form"><div class="dialog-heading"><div><span class="eyebrow">DIRECTORIO</span><h2 id="editor-title">Nuevo usuario</h2></div><button type="button" class="icon-button close-dialog" aria-label="Cerrar">×</button></div><p id="editor-description" class="muted">Crea una cuenta y asigna su nivel de acceso.</p>
+    <label for="edit-name">Nombre completo</label><input id="edit-name" required maxlength="100" autocomplete="off">
+    <label for="edit-email">Correo electrónico</label><input id="edit-email" required type="email" maxlength="254" autocomplete="off">
+    <div id="create-fields"><label for="edit-password">Contraseña inicial</label><input id="edit-password" type="password" minlength="12" maxlength="72" autocomplete="new-password"><p class="field-help">Mínimo 12 caracteres, máximo 72 bytes.</p><label for="edit-role">Rol</label><select id="edit-role"><option value="USER">Usuario · acceso a su perfil</option><option value="ADMIN">Administrador · gestión de todas las cuentas</option></select></div>
+    <p id="editor-error" class="error" role="alert" hidden></p><div class="dialog-actions"><button type="button" class="button secondary close-dialog">Cancelar</button><button id="save-user" type="submit" class="button primary">Crear usuario</button></div>
+  </form></dialog>
+  <dialog id="detail"><div class="dialog-heading"><h2>Perfil del usuario</h2><button type="button" class="icon-button close-dialog" aria-label="Cerrar">×</button></div><div id="detail-content"></div><div class="dialog-actions"><button class="button secondary close-dialog">Cerrar</button></div></dialog>
+  <dialog id="delete-dialog"><form id="delete-form"><span class="eyebrow">ELIMINAR CUENTA</span><h2>¿Eliminar este usuario?</h2><p id="delete-description"></p><p class="muted">Esta acción es permanente. La persona perderá el acceso a su cuenta.</p><p id="delete-error" class="error" role="alert" hidden></p><div class="dialog-actions"><button type="button" class="button secondary close-dialog" autofocus>Cancelar</button><button id="confirm-delete" type="submit" class="button danger">Eliminar usuario</button></div></form></dialog>
+</body>
+</html>

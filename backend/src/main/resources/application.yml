@@ -1,0 +1,36 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 3MB
+  application:
+    name: usuarios-api
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/usuarios}
+    username: ${DB_USERNAME:usuarios}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+  flyway:
+    enabled: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+  tomcat:
+    max-http-form-post-size: 3MB
+    max-swallow-size: 3MB
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    issuer: usuarios-api
+    ttl: 15m
+  bootstrap:
+    enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}
+    email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:}

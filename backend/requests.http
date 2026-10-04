@@ -1,0 +1,65 @@
+@base = http://localhost:8080
+@userToken = PEGAR_ACCESS_TOKEN_USER
+@adminToken = PEGAR_ACCESS_TOKEN_ADMIN
+@id = PEGAR_UUID
+
+### Registro público (201)
+POST {{base}}/api/auth/register
+Content-Type: application/json
+
+{"nombre":"Ana","email":"ana@example.com","password":"UnaClaveLarga123!"}
+
+### Login USER (200). Copia accessToken a userToken.
+POST {{base}}/api/auth/login
+Content-Type: application/json
+
+{"email":"ana@example.com","password":"UnaClaveLarga123!"}
+
+### Cuenta propia (200)
+GET {{base}}/api/usuarios/me
+Authorization: Bearer {{userToken}}
+
+### Login ADMIN. Sustituye la contraseña configurada y copia accessToken.
+POST {{base}}/api/auth/login
+Content-Type: application/json
+
+{"email":"admin@example.com","password":"REEMPLAZAR_CON_PASSWORD_ADMIN"}
+
+### Crear usuario (201). Copia id a la variable id.
+POST {{base}}/api/usuarios
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{"nombre":"Pedro","email":"pedro@example.com","password":"OtraClaveLarga456!","role":"USER"}
+
+### Lista paginada (200)
+GET {{base}}/api/usuarios?page=0&size=20
+Authorization: Bearer {{adminToken}}
+
+### Consulta (200)
+GET {{base}}/api/usuarios/{{id}}
+Authorization: Bearer {{adminToken}}
+
+### Actualización (200)
+PUT {{base}}/api/usuarios/{{id}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{"nombre":"Pedro Actualizado","email":"pedro.nuevo@example.com"}
+
+### Eliminación (204)
+DELETE {{base}}/api/usuarios/{{id}}
+Authorization: Bearer {{adminToken}}
+
+### Sin autenticación (401)
+GET {{base}}/api/usuarios
+
+### USER intenta listar (403)
+GET {{base}}/api/usuarios
+Authorization: Bearer {{userToken}}
+
+### Registro intenta asignar ADMIN (400)
+POST {{base}}/api/auth/register
+Content-Type: application/json
+
+{"nombre":"Ataque","email":"otro@example.com","password":"UnaClaveLarga123!","role":"ADMIN"}
