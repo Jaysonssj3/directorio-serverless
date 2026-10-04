@@ -1,0 +1,5 @@
+2026-09-27T11:39:04.185-04:00  INFO 49492 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://127.0.0.1:55439/mobile_test (PostgreSQL 18.6)
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.87 s -- in com.ejemplo.usuarios.ApiIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.409 s -- in com.ejemplo.usuarios.AvatarIntegrationTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS

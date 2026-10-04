@@ -1,0 +1,141 @@
+name: Test and deploy serverless
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: directorio-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: directorio_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: local_ci_only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U test -d directorio_test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Install backend dependencies
+        working-directory: backend
+        run: mvn -B -ntp -Plambda dependency:go-offline
+      - name: Test, Build and Package Lambda
+        working-directory: backend
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/directorio_test
+          SPRING_DATASOURCE_USERNAME: test
+          SPRING_DATASOURCE_PASSWORD: local_ci_only
+        run: mvn -B -ntp -Plambda verify
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Test Mobile
+        working-directory: mobile
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lambda-package
+          path: backend/target/usuarios-api-2.0.0-lambda.zip
+          if-no-files-found: error
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: backend/target/surefire-reports/*.xml
+          retention-days: 7
+
+  deploy:
+    name: Terraform and Deploy Lambda
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: 'false'
+      TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
+      TF_VAR_database_url: ${{ secrets.DATABASE_URL }}
+      TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
+      TF_VAR_admin_email: ${{ secrets.BOOTSTRAP_ADMIN_EMAIL }}
+      TF_VAR_admin_password: ${{ secrets.BOOTSTRAP_ADMIN_PASSWORD }}
+      TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: lambda-package
+          path: backend/target
+      - name: Check configuration
+        shell: bash
+        run: |
+          for key in TF_VAR_aws_region TF_VAR_database_url TF_VAR_jwt_secret TF_VAR_admin_email TF_VAR_admin_password TF_STATE_BUCKET; do
+            if [ -z "${!key}" ]; then echo "::error::Falta configurar $key"; exit 1; fi
+          done
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.16.5'
+          terraform_wrapper: false
+      - name: Terraform Init
+        working-directory: terraform
+        run: >-
+          terraform init -input=false
+          -backend-config="bucket=$TF_STATE_BUCKET"
+          -backend-config="key=directorio/app.tfstate"
+          -backend-config="region=$TF_VAR_aws_region"
+          -backend-config="encrypt=true"
+          -backend-config="use_lockfile=true"
+      - name: Terraform Validate
+        working-directory: terraform
+        run: |
+          terraform fmt -check -recursive
+          terraform validate
+      - name: Terraform Plan
+        working-directory: terraform
+        run: terraform plan -input=false -lock-timeout=5m -out=deploy.tfplan
+      - name: Terraform Apply
+        working-directory: terraform
+        run: terraform apply -input=false -lock-timeout=5m -auto-approve deploy.tfplan
+      - name: Deploy Lambda - verify update and API
+        working-directory: terraform
+        env:
+          SMOKE_ADMIN_EMAIL: ${{ secrets.BOOTSTRAP_ADMIN_EMAIL }}
+          SMOKE_ADMIN_PASSWORD: ${{ secrets.BOOTSTRAP_ADMIN_PASSWORD }}
+        run: |
+          aws lambda wait function-updated-v2 --function-name "$(terraform output -raw lambda_name)"
+          export API_URL="$(terraform output -raw api_url)"
+          python ../scripts/smoke-cloud.py
+          printf '### Despliegue verificado\nAPI: %s\n\nLambda: %s\n' "$API_URL" "$(terraform output -raw lambda_name)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove saved plan
+        if: always()
+        working-directory: terraform
+        run: rm -f deploy.tfplan
