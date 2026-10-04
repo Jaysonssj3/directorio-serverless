@@ -1,5 +1,5 @@
 output "api_url" {
-  description = "Usa esta URL HTTPS en la app móvil, sin añadir /api."
+  description = "url sin /api."
   value       = aws_apigatewayv2_stage.default.invoke_url
 }
 output "lambda_name" {
