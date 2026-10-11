@@ -1,67 +1,49 @@
-# Nueva actividad: notificaciones por correo
+# Directorio
 
-Consulta [NOTIFICACIONES-PASO-A-PASO.md](NOTIFICACIONES-PASO-A-PASO.md) para desplegar SNS, SQS, notification-lambda y SES, verificar el remitente y probar la pantalla móvil. [Validación local](NOTIFICACIONES-VALIDACION.md).
+Aplicación móvil de gestión de usuarios con React Native y TypeScript, API Spring Boot y PostgreSQL. Incluye autenticación JWT, roles, fotos de perfil y notificaciones por correo.
 
-# Despliegue serverless AWS
-
-La nueva entrega está en **SERVERLESS-PASO-A-PASO.md**. Incluye `terraform/`, `.github/workflows/deploy.yml`, adaptador Lambda, pruebas y guía de video. El despliegue real espera configuración de GitHub, AWS y Neon; consulta **SERVERLESS-VALIDACION.md** para distinguir las verificaciones locales de la evidencia cloud pendiente.
-
-- Guía de puesta en marcha: `SERVERLESS-PASO-A-PASO.md`.
-- Video de 8–12 minutos: `GUION-VIDEO-SERVERLESS.md`.
-- Registro de evidencia: `EVIDENCIA-SERVERLESS.md`.
-- Construir Lambda: en `backend`, `mvn -Plambda verify`.
+## Arquitectura
 
 ```text
-Mobile → API Gateway HTTPS → Lambda Java 21 → Neon PostgreSQL
-GitHub main → Actions → pruebas + ZIP → Terraform Apply → AWS
+Mobile → API Gateway → directorio-api → PostgreSQL
+                            ↓
+                           SNS → SQS → notification-lambda → SES → Correo
 ```
 
-A continuación se conserva la documentación de la ejecución local.
+El backend utiliza arquitectura hexagonal; la aplicación móvil utiliza MVVM. La función de notificaciones procesa los mensajes de SQS independientemente de la solicitud HTTP.
 
-# Directorio móvil · React Native + TypeScript
+## Estructura
 
-Aplicación nativa iOS/Android que consume la API Spring Boot de usuarios. Usa MVVM, JWT, CRUD, consultas concurrentes y subida de fotos. El backend conserva su arquitectura hexagonal y añade una migración para almacenar imágenes en PostgreSQL.
+- `backend/`: API Java 21, migraciones, configuración Docker y pruebas.
+- `mobile/`: aplicación React Native, configuración Expo y pruebas.
+- `notification-lambda/`: procesamiento de mensajes y envío mediante SES.
+- `terraform/`: infraestructura AWS, roles IAM y grupos de CloudWatch.
+- `.github/workflows/deploy.yml`: pruebas, empaquetado y despliegue.
+- `scripts/`: empaquetado de notificaciones, política IAM de despliegue y comprobación de la API.
+- `postman/`: colección para probar autenticación, usuarios y fotos.
 
-## Empieza por aquí, en iPhone
+## Ejecutar la aplicación móvil
 
-Para presentar con datos móviles, lee primero **CLASE-MANANA.md**. Para la instalación general, lee **INICIO-IPHONE.md**. Usa Windows para iniciar la API y el servidor de desarrollo; abre la app en tu iPhone con **Expo Go**. La app no es la pantalla HTML del proyecto anterior: sus vistas usan componentes nativos `View`, `Text`, `FlatList`, `TextInput`, `Image` y `Modal`.
-
-## Contenido
-
-| Archivo o carpeta | Para qué sirve |
-| --- | --- |
-| `mobile/` | Código React Native + TypeScript, configuración Expo y pruebas |
-| `backend/` | API Java, migraciones V1/V2, Dockerfile, Compose y pruebas |
-| `usuarios-api-2.0.0.jar` | Backend compilado con los nuevos endpoints de fotos |
-| `Iniciar-Backend.cmd` / `.ps1` | Arranque con tu PostgreSQL instalado en Windows |
-| `Iniciar-Mobile.cmd` | Inicia Expo después de la configuración inicial |
-| `INICIO-IPHONE.md` | Instalación y conexión paso a paso |
-| `DOCKER.md` | Construir y ejecutar backend + PostgreSQL en contenedores |
-| `ARQUITECTURA-Y-DEFENSA.md` | Explicación del código y recorrido para la corrección en clase |
-| `postman/` | Colección de pruebas de la API, incluida subida de archivos |
-| `VALIDACION.md` | Qué se verificó y qué falta probar en el dispositivo |
-
-## Requisitos y permisos
-
-- Windows con Java 21 o superior compatible y PostgreSQL para el arranque local. El código Java se compila con objetivo 21.
-- Node.js 24 LTS con npm; dependencias fijadas en `mobile/package-lock.json`. Expo SDK 57, React Native 0.86.3 y React 19.2.3.
-- iPhone compatible con la versión vigente de Expo Go, misma red Wi-Fi que la PC y sesión en la misma cuenta Expo en teléfono/CLI.
-- Una cuenta ADMIN de tu API para demostrar CRUD. El registro público siempre crea USER.
-- Para Docker: Docker Engine operativo. Instalar WSL por sí solo no garantiza esto.
-
-El proyecto anterior permanece separado. Al iniciar este JAR sobre tu base `usuarios`, Flyway conserva los usuarios y añade `usuario_avatar`. Haz una copia de seguridad antes de aplicar cambios a datos que quieras conservar. El nuevo lanzador genera un secreto JWT propio: inicia sesión otra vez; tus contraseñas de cuentas no cambian.
-
-## Comprobaciones reproducibles
-
-Desde `mobile`:
+Requiere Node.js 24 y Expo Go en el teléfono. Desde `mobile`:
 
 ```powershell
 npm ci
-npm run typecheck
-npm test
-npm run export:ios
-npm run export:android
+npx expo start --lan --go
 ```
+
+Conecta la PC y el teléfono a la misma red y escanea el QR. También puedes usar `Iniciar-Mobile.cmd` desde la raíz.
+
+En la configuración de la aplicación, utiliza esta dirección del backend desplegado:
+
+```text
+https://wk1ewnduk3.execute-api.us-east-2.amazonaws.com
+```
+
+Para esta conexión no hace falta iniciar el backend local. El servidor Expo debe permanecer abierto durante el uso con Expo Go.
+
+## Backend local
+
+Requiere Java 21 o superior compatible y PostgreSQL. Consulta [backend/README.md](backend/README.md) para los endpoints y variables de configuración, o [DOCKER.md](DOCKER.md) para ejecutar con Docker.
 
 Desde `backend`:
 
@@ -69,11 +51,80 @@ Desde `backend`:
 .\mvnw.cmd verify
 ```
 
-Con Docker operativo, las mismas pruebas contra PostgreSQL 17:
+Después utiliza `Iniciar-Backend.cmd`, que solicita la contraseña de PostgreSQL. Para crear un administrador inicial:
 
 ```powershell
-.\mvnw.cmd -Ppostgres-test verify
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\Iniciar-Backend.ps1 -CrearAdministrador
 ```
 
-La exportación de Expo genera JavaScript/Hermes para la plataforma: **no produce un IPA/APK ni equivale a probar un teléfono**. Para esta entrega se utiliza Expo Go; una distribución iOS independiente requiere firma y configuración Apple. No se incluye una cuenta Apple ni credenciales de firma.
+La creación inicial no cambia la contraseña de un administrador existente. Los datos locales y los de AWS son independientes.
 
+## Notificaciones
+
+La pantalla **Enviar correo** está disponible para ADMIN. El endpoint requiere un JWT de administrador:
+
+```http
+POST /notifications/send
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+```json
+{
+  "email": "polancojayson@gmail.com",
+  "subject": "Prueba SNS",
+  "message": "Hola desde AWS Serverless"
+}
+```
+
+También existe el alias `/api/notifications/send`. La respuesta HTTP 202 contiene `notificationId`, estado `QUEUED` y el mensaje «Mensaje enviado correctamente.». Confirma la publicación en SNS; el correo se procesa después.
+
+El remitente se configura con `notification_sender_email` en `terraform/terraform.tfvars`. Hay que verificarlo en SES, en la región del despliegue (`us-east-2`). Mientras SES permanezca en sandbox, el destinatario también debe estar verificado. No se necesita una contraseña SMTP.
+
+Los registros permiten seguir un mismo `notificationId`:
+
+- `/aws/lambda/directorio-api`: `notification_published`.
+- `/aws/lambda/notification-lambda`: `notification_received` y `email_accepted_by_ses`.
+
+La recepción se comprueba en el buzón del destinatario. Si falla, revisa esos registros y `directorio-notifications-dlq`. SQS reintenta los mensajes fallidos; tras cinco recepciones fallidas pasan a la cola de errores. La entrega es al menos una vez y pueden existir duplicados.
+
+## Despliegue
+
+El workflow de GitHub Actions ejecuta pruebas, genera los paquetes de ambas Lambdas y realiza `terraform init`, `terraform validate`, `terraform test`, `terraform plan` y `terraform apply -auto-approve` al publicar en `main`.
+
+Configuración del repositorio:
+
+| Tipo | Nombres |
+| --- | --- |
+| Secrets | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `DATABASE_URL`, `JWT_SECRET`, `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` |
+| Variable | `TF_STATE_BUCKET` |
+
+`DATABASE_URL` es la URI PostgreSQL con TLS. `JWT_SECRET` debe ser Base64 de al menos 32 bytes aleatorios. No guardes credenciales en Git.
+
+El estado principal utiliza un bucket S3 privado con versionado y la clave `directorio/app.tfstate`. Para una instalación nueva, `terraform/bootstrap/` permite crear el bucket antes del despliegue principal. No vuelvas a crear el bucket de una instalación existente.
+
+La política de la identidad de despliegue se genera con:
+
+```powershell
+python scripts/create-deploy-policy.py --account ID_CUENTA --region us-east-2 --bucket NOMBRE_BUCKET > politica-ci.json
+```
+
+Esta política se asigna a la identidad IAM utilizada por GitHub Actions. Terraform crea los roles de ejecución de las Lambdas. Los archivos de estado, planes, credenciales y configuración privada están excluidos de Git.
+
+## Pruebas
+
+Desde `mobile`:
+
+```powershell
+npm run typecheck
+npm test
+```
+
+Desde la raíz:
+
+```powershell
+python -m unittest discover -s notification-lambda -p "test_*.py" -v
+python scripts/package-notifications.py
+```
+
+Desde `backend`, `mvn -Plambda verify` construye el paquete AWS. El pipeline prueba contra PostgreSQL y comprueba autenticación, permisos, CRUD y fotos después del despliegue. El envío real de correo se verifica por separado desde la aplicación y el buzón.

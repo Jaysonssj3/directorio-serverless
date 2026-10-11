@@ -68,4 +68,4 @@ Los datos se conservan. `docker compose down -v` elimina el volumen y todos los 
 
 Muestra `Dockerfile`, `compose.yaml`, `docker compose ps`, logs de migraciones y una petición desde el iPhone o Postman al contenedor. No muestres secretos de `.env` ni el contenido del JWT en capturas públicas.
 
-Estado de esta entrega: archivos Docker preparados; el daemon Docker de esta PC no ha permitido verificar la construcción/ejecución del contenedor. La API se probó por separado, como se detalla en `VALIDACION.md`.
+Estado de esta entrega: archivos Docker preparados; el daemon Docker de esta PC no ha permitido verificar la construcción/ejecución del contenedor. La ejecución local con PostgreSQL y el despliegue AWS se verificaron por separado.

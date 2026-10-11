@@ -1,6 +1,6 @@
 # Usuarios API 2.0.0
 
-Spring Boot, PostgreSQL, JWT y arquitectura hexagonal. Conserva el CRUD y añade fotos de perfil. La aplicación React Native está en `../mobile`; comienza con `../INICIO-IPHONE.md`.
+Spring Boot, PostgreSQL, JWT y arquitectura hexagonal. Conserva el CRUD y añade fotos de perfil. La aplicación React Native está en `../mobile`; consulta el README de la raíz para iniciar el móvil.
 
 ## Endpoints
 
@@ -42,6 +42,6 @@ Para Docker consulta `../DOCKER.md`. El `compose.yaml` no publica el puerto de P
 - Sesiones sin cookies; CSRF deshabilitado para este API con Bearer. Sin CORS abierto; el móvil nativo no necesita CORS.
 - Para un servicio público faltan configuración HTTPS del despliegue, límites de peticiones/login, observabilidad, backups y gestión operacional de secretos.
 
-Los recursos `static/` de la interfaz web anterior siguen disponibles, pero la app móvil no los usa. La arquitectura y la defensa están explicadas en `../ARQUITECTURA-Y-DEFENSA.md`.
+Los recursos `static/` de la interfaz web anterior siguen disponibles, pero la app móvil no los usa.
 
 Las pruebas por defecto usan H2 en modo PostgreSQL y vacían sus tablas. `-Ppostgres-test` usa PostgreSQL 17 en Testcontainers. No apuntes las pruebas a la base de trabajo.

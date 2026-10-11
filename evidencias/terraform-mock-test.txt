@@ -1,6 +1,0 @@
-tests\infra.tftest.hcl... in progress
-  run "serverless_plan"... pass
-tests\infra.tftest.hcl... tearing down
-tests\infra.tftest.hcl... pass
-
-Success! 1 passed, 0 failed.
