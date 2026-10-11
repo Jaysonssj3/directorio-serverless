@@ -49,6 +49,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET,"/api/usuarios/me").authenticated()
                 .requestMatchers(HttpMethod.GET,"/api/usuarios/me/avatar").authenticated()
                 .requestMatchers(HttpMethod.POST,"/api/usuarios/me/avatar").authenticated()
+                .requestMatchers(HttpMethod.POST,"/notifications/send","/api/notifications/send").hasRole("ADMIN")
                 .requestMatchers("/api/usuarios","/api/usuarios/**").hasRole("ADMIN")
                 .anyRequest().denyAll())
             .exceptionHandling(e->e

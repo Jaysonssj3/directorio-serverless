@@ -44,3 +44,16 @@ variable "lambda_zip" {
   type    = string
   default = "../backend/target/usuarios-api-2.0.0-lambda.zip"
 }
+
+variable "notification_sender_email" {
+  description = "Correo remitente: confirmar el enlace SES en esta región antes de enviar."
+  type        = string
+  validation {
+    condition     = can(regex("^[^@ ]+@[^@ ]+\\.[^@ ]+$", var.notification_sender_email))
+    error_message = "Escribe un correo remitente válido."
+  }
+}
+variable "notification_zip" {
+  type    = string
+  default = "../notification-lambda/dist/notification-lambda.zip"
+}

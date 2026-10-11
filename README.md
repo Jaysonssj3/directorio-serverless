@@ -1,3 +1,7 @@
+# Nueva actividad: notificaciones por correo
+
+Consulta [NOTIFICACIONES-PASO-A-PASO.md](NOTIFICACIONES-PASO-A-PASO.md) para desplegar SNS, SQS, notification-lambda y SES, verificar el remitente y probar la pantalla móvil. [Validación local](NOTIFICACIONES-VALIDACION.md).
+
 # Despliegue serverless AWS
 
 La nueva entrega está en **SERVERLESS-PASO-A-PASO.md**. Incluye `terraform/`, `.github/workflows/deploy.yml`, adaptador Lambda, pruebas y guía de video. El despliegue real espera configuración de GitHub, AWS y Neon; consulta **SERVERLESS-VALIDACION.md** para distinguir las verificaciones locales de la evidencia cloud pendiente.

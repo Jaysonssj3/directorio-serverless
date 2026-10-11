@@ -1,13 +1,18 @@
-import React, { useEffect, useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { ActivityIndicator, Alert, FlatList, Image, Text, View } from 'react-native';
 import type { ApiClient } from '../data/ApiClient';
 import { pickPhoto } from '../data/PhotoPicker';
 import type { UsuariosViewModel } from '../viewmodels/UsuariosViewModel';
 import { Button, colors, Feedback, styles } from './components';
+import { NotificationsRepository } from '../data/NotificationsRepository';
+import { NotificationsViewModel } from '../viewmodels/NotificationsViewModel';
+import { NotificationsScreen } from './NotificationsScreen';
 import { UserForm } from './UserForm';
 export function DirectoryScreen({ vm, api, logout }: { vm: UsuariosViewModel; api: ApiClient; logout: () => void }) {
   const state = useSyncExternalStore(vm.subscribe, vm.getSnapshot);
   const [tab, setTab] = useState<'users' | 'profile'>('users');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notifications = useMemo(() => new NotificationsViewModel(new NotificationsRepository(api)), [api]);
   const [creating, setCreating] = useState(false);
   const [photoMissing, setPhotoMissing] = useState(false);
   const admin = state.profile.role === 'ADMIN';
@@ -19,6 +24,7 @@ export function DirectoryScreen({ vm, api, logout }: { vm: UsuariosViewModel; ap
     <Text style={styles.title}>{admin && tab === 'users' ? 'Las personas\nhacen el equipo.' : 'Mi perfil'}</Text>
     <Text style={styles.muted}>Hola, {state.profile.nombre}. {admin ? 'Gestiona tu directorio desde aquí.' : 'Tu información y tu foto en un solo lugar.'}</Text>
     <View style={styles.row}>{admin && <><Button title="Usuarios" secondary={tab !== 'users'} onPress={() => setTab('users')} /><Button title="Mi perfil" secondary={tab !== 'profile'} onPress={() => setTab('profile')} /></>}<Button title="Salir" secondary onPress={logout} /></View>
+    {admin && <Button title="Enviar correo" secondary onPress={() => setNotificationsOpen(true)} />}
     <Feedback error={state.error || state.profileError || state.listError} notice={state.notice} />
     {admin && tab === 'users' ? <>
       <View style={styles.card}>
@@ -40,6 +46,7 @@ export function DirectoryScreen({ vm, api, logout }: { vm: UsuariosViewModel; ap
       <Button title={state.loading ? 'Actualizando…' : 'Actualizar perfil'} secondary disabled={state.loading || state.saving} onPress={() => { void vm.load(); }} />
     </View>}
   </View>;
+  if (notificationsOpen && admin) return <NotificationsScreen vm={notifications} close={() => setNotificationsOpen(false)} />;
   return <View style={styles.screen}>
     <FlatList contentContainerStyle={styles.content} data={admin && tab === 'users' ? state.users : []} keyExtractor={u => u.id}
       ListHeaderComponent={header} ItemSeparatorComponent={() => <View style={{ height: 12 }} />}

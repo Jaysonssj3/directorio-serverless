@@ -46,6 +46,19 @@ jobs:
           SPRING_DATASOURCE_USERNAME: test
           SPRING_DATASOURCE_PASSWORD: local_ci_only
         run: mvn -B -ntp -Plambda verify
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Test notification Lambda
+        run: python -m unittest discover -s notification-lambda -p "test_*.py" -v
+      - name: Package notification Lambda
+        run: python scripts/package-notifications.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: notification-package
+          path: notification-lambda/dist/notification-lambda.zip
+          if-no-files-found: error
+          retention-days: 3
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -90,6 +103,10 @@ jobs:
         with:
           name: lambda-package
           path: backend/target
+      - uses: actions/download-artifact@v4
+        with:
+          name: notification-package
+          path: notification-lambda/dist
       - name: Check configuration
         shell: bash
         run: |
@@ -119,6 +136,7 @@ jobs:
         run: |
           terraform fmt -check -recursive
           terraform validate
+          terraform test
       - name: Terraform Plan
         working-directory: terraform
         run: terraform plan -input=false -lock-timeout=5m -out=deploy.tfplan
@@ -134,6 +152,8 @@ jobs:
           aws lambda wait function-updated-v2 --function-name "$(terraform output -raw lambda_name)"
           export API_URL="$(terraform output -raw api_url)"
           python ../scripts/smoke-cloud.py
+          aws lambda wait function-updated-v2 --function-name "$(terraform output -raw notification_lambda_name)"
+          echo 'SNS/SQS/SES: infraestructura desplegada. La entrega real de correo se comprueba despuÃ©s de verificar SES.' >> "$GITHUB_STEP_SUMMARY"
           printf '### Despliegue verificado\nAPI: %s\n\nLambda: %s\n' "$API_URL" "$(terraform output -raw lambda_name)" >> "$GITHUB_STEP_SUMMARY"
       - name: Remove saved plan
         if: always()

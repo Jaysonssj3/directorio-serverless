@@ -5,6 +5,7 @@
   <name>usuarios-api</name><description>API hexagonal de usuarios con JWT y PostgreSQL</description>
   <properties><java.version>21</java.version></properties>
   <dependencies>
+    <dependency><groupId>software.amazon.awssdk</groupId><artifactId>sns</artifactId><version>2.31.54</version></dependency>
     <dependency><groupId>com.amazonaws.serverless</groupId><artifactId>aws-serverless-java-container-springboot3</artifactId><version>2.1.5</version></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-validation</artifactId></dependency>

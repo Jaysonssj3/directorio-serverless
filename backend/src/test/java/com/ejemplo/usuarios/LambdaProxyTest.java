@@ -38,6 +38,9 @@ class LambdaProxyTest {
         String token=call("POST","/api/auth/login",Map.of("email",email,"password",password),null,200).path("accessToken").asText();
         call("GET","/api/usuarios/me",null,token,200);
         call("GET","/api/usuarios",null,token,403);
+        var notification=Map.of("email","demo@example.com","subject","Prueba","message","Hola");
+        call("POST","/notifications/send",notification,null,401);
+        call("POST","/notifications/send",notification,token,403);
         byte[] png=Base64.getDecoder().decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lXcAAAAASUVORK5CYII=");
         String boundary="LambdaBoundary";
         var bytes=new ByteArrayOutputStream();
