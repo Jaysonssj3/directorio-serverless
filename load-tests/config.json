@@ -1,0 +1,13 @@
+{
+  "region": "us-east-2",
+  "api_id": "wk1ewnduk3",
+  "main_lambda": "directorio-api",
+  "notification_lambda": "notification-lambda",
+  "topic": "directorio-notifications",
+  "queue": "directorio-notifications",
+  "dlq": "directorio-notifications-dlq",
+  "queue_stop_visible": 500,
+  "recovery_poll_seconds": 10,
+  "recovery_timeout_seconds": 1800,
+  "recovery_empty_samples": 3
+}

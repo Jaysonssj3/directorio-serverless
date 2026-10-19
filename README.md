@@ -128,3 +128,7 @@ python scripts/package-notifications.py
 ```
 
 Desde `backend`, `mvn -Plambda verify` construye el paquete AWS. El pipeline prueba contra PostgreSQL y comprueba autenticación, permisos, CRUD y fotos después del despliegue. El envío real de correo se verifica por separado desde la aplicación y el buzón.
+
+## Pruebas de carga
+
+Scripts k6, escenarios, monitoreo AWS y generación de resultados: [load-tests/README.md](load-tests/README.md).
